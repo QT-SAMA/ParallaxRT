@@ -1,11 +1,3 @@
-/*
- * ParallaxSYNC_FreeRun - 配合 PotPlayer ParallaxRT 滤镜的 DLP-Link 同步器
- * 串口协议: 115200, 8N1
- * 接收: 0xAA 0x01 (左眼) / 0xAA 0x02 (右眼)
- * 输出: ESP32 自主运行 120Hz 脉冲，标记仅用于唤醒和超时检测
- * 无信号超时后自动关闭 LED 待机
- */
-
 #include <Arduino.h>
 
 // ==================== 硬件配置 ====================
@@ -13,8 +5,11 @@ constexpr int PIN_DLP_LED = 13;
 constexpr uint32_t SERIAL_BAUD = 115200;
 
 // ==================== DLP-Link 时序参数 ====================
-constexpr uint32_t SUBFRAME_PERIOD_US = 8333; // 120Hz
-constexpr uint32_t PULSE_WIDTH_US = 25;
+constexpr uint32_t SUBFRAME_PERIOD_US = 8333; // 120Hz (8.333ms)
+constexpr uint32_t PULSE_WIDTH_US = 25;       // 同步光脉冲持续时间 (微秒)
+
+// DLP-Link 左右眼偏移量 (微秒)
+// 左眼通常为 500us，右眼通常为 700us
 constexpr uint32_t OFFSET_LEFT_US = 500;
 constexpr uint32_t OFFSET_RIGHT_US = 700;
 
@@ -28,13 +23,16 @@ uint32_t nextPulseTime = 0;
 uint32_t lastMarkerTime = 0;
 uint8_t rxState = 0;
 
-// ==================== LED 控制 ====================
+// ==================== 快速 LED 控制 ====================
 inline void ledOn()  { digitalWrite(PIN_DLP_LED, HIGH); }
 inline void ledOff() { digitalWrite(PIN_DLP_LED, LOW); }
 
 inline void preciseDelayUs(uint32_t us) {
+    if (us == 0) return;
     uint32_t start = micros();
-    while ((micros() - start) < us) { /* busy wait */ }
+    while ((micros() - start) < us) {
+        // busy wait 保证微秒级精确时序
+    }
 }
 
 void emitSyncPulse(uint32_t width, uint32_t offset) {
@@ -53,7 +51,7 @@ void setup() {
 
     lastMarkerTime = millis();
 
-    // 启动指示：快闪 3 次
+    // 启动自检闪烁指示：快闪 3 次
     for (int i = 0; i < 3; i++) {
         ledOn();  delay(50);
         ledOff(); delay(50);
@@ -61,7 +59,7 @@ void setup() {
 }
 
 void loop() {
-    // ---------- 1. 处理串口接收（仅用于唤醒和超时检测） ----------
+    // ---------- 1. 处理串口标记（硬锁相与眼别强制对齐） ----------
     while (Serial.available() > 0) {
         uint8_t b = Serial.read();
         if (rxState == 0) {
@@ -71,38 +69,38 @@ void loop() {
         } else if (rxState == 1) {
             if (b == 0x01 || b == 0x02) {
                 lastMarkerTime = millis();
-                if (!isActive) {
-                    // 从待机唤醒：重置时间基准，但眼别由 ESP32 自由交替
-                    isActive = true;
-                    nextPulseTime = micros() + SUBFRAME_PERIOD_US;
-                }
+                isActive = true;
+
+                // 强制对齐眼别：0x01 = 左眼, 0x02 = 右眼
+                currentEyeLeft = (b == 0x01);
+
+                // 立即发射当前眼别的 DLP-Link 同步脉冲，实现与 PC 显卡微秒级硬锁相
+                uint32_t offset = currentEyeLeft ? OFFSET_LEFT_US : OFFSET_RIGHT_US;
+                emitSyncPulse(PULSE_WIDTH_US, offset);
+
+                // 重新校准下一个预期的本地脉冲基准时间
+                nextPulseTime = micros() + SUBFRAME_PERIOD_US;
             }
             rxState = 0;
         }
     }
 
-    // ---------- 2. 超时检测：无信号则关灯待机 ----------
+    // ---------- 2. 超时检测：无信号则熄灯待机保护 ----------
     if (isActive && (millis() - lastMarkerTime > SIGNAL_TIMEOUT_MS)) {
         isActive = false;
         ledOff();
     }
 
-    // ---------- 3. 自主运行 120Hz 脉冲发生器 ----------
+    // ---------- 3. 补帧防闪烁守护 (Watchdog Fallback) ----------
+    // 仅在 PC 偶发微小丢帧或卡顿、没有按时送达下一帧标记时触发
     if (isActive) {
         uint32_t now = micros();
-        if ((int32_t)(now - nextPulseTime) >= 0) {
-            // 眼别完全由内部计数器交替，不受串口标记影响
+        // 允许 1.5ms 的容差窗口，超过窗口则补发一次交替脉冲保持眼镜同步锁相
+        if ((int32_t)(now - (nextPulseTime + 1500)) >= 0) {
             currentEyeLeft = !currentEyeLeft;
-
             uint32_t offset = currentEyeLeft ? OFFSET_LEFT_US : OFFSET_RIGHT_US;
             emitSyncPulse(PULSE_WIDTH_US, offset);
-
-            nextPulseTime += SUBFRAME_PERIOD_US;
-
-            // 落后太多则重置时间基准
-            if ((int32_t)(micros() - nextPulseTime) > (int32_t)SUBFRAME_PERIOD_US) {
-                nextPulseTime = micros() + SUBFRAME_PERIOD_US;
-            }
+            nextPulseTime = now + SUBFRAME_PERIOD_US;
         }
     }
 }
