@@ -173,3 +173,4 @@ ParallaxRT/
 - **License**: Distributed under the terms of the [MIT License](LICENSE).
 - **Depth Model**: Monocular depth estimation is powered by the [Depth Anything V2](https://github.com/DepthAnything/Depth-Anything-V2) architecture.
 - **Inference Runtime**: Accelerated via [ONNX Runtime](https://onnxruntime.ai/) and the [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit).
+- **Coder**: Accelerated via [ChatGPT](https://chatgpt.com/),[gemini](https://gemini.google.com/),[DeepSeek](https://www.deepseek.com/).
