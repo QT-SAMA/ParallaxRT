@@ -61,33 +61,6 @@ Positioned between the upstream video decoder and the downstream video renderer,
 
 ---
 
-## 3. System Architecture
-
-```mermaid
-flowchart TD
-    subgraph DirectShow_Pipeline [DirectShow Media Pipeline (PotPlayer)]
-        Source[Demuxer / Source Filter] --> Decoder[Video Decoder (FFmpeg / LAV)]
-        Decoder -- "NV12 / YV12 / RGB32" --> Filter["ParallaxRT Filter (.ax)"]
-        Filter -- "Stereo Output (Hardware Pitch Aligned)" --> Renderer[Direct3D 11 Video Renderer]
-    end
-
-    subgraph ParallaxRT_Engine [ParallaxRT Compute Engine]
-        Filter --> AsyncBuffer[Async Ring Buffer & Temporal Smoothing]
-        AsyncBuffer --> WorkerThread[AI Inference Worker Thread]
-        WorkerThread -- "Depth Anything V2" --> DepthData[FP32 Depth Map]
-        DepthData --> CudaKernel[CUDA DIBR Synthesis Kernels]
-        CudaKernel --> StereoFrame[Stereoscopic Frame]
-        StereoFrame --> Filter
-    end
-
-    subgraph Control_Interface [Control & Hardware Synchronization]
-        GUI[ParallaxRT Control Panel] <-->|Shared Memory IPC| Filter
-        Filter -.->|RS-232 Serial Pulses| Microcontroller["ParallaxSYNC Controller (Active Glasses)"]
-    end
-```
-
----
-
 ## 4. System Requirements
 
 | Specification | Minimum Requirement | Recommended Requirement |
