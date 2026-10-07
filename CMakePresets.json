@@ -1,0 +1,59 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "vs2022-x64",
+      "displayName": "Visual Studio 2022 - x64",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_MANIFEST_INSTALL": "OFF",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/vcpkg_installed"
+      },
+      "environment": {
+        "VCPKG_ROOT": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/vcpkg"
+      }
+    },
+    {
+      "name": "vs2022-cuda-x64",
+      "displayName": "Visual Studio 2022 - CUDA x64",
+      "inherits": "vs2022-x64",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "PARALLAXRT_ENABLE_CUDA": "ON",
+        "PARALLAXRT_ENABLE_DIRECTML": "OFF",
+        "CMAKE_CUDA_COMPILER": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.8/bin/nvcc.exe",
+        "CUDAToolkit_ROOT": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.8",
+        "ONNXRUNTIME_ROOT": "${sourceDir}/deps/onnxruntime-gpu-1.24.4",
+        "CUDNN_ROOT": "${sourceDir}/deps/cudnn-cu12-9.27.0.42"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "vs2022-x64-debug",
+      "displayName": "Build Debug (x64)",
+      "configurePreset": "vs2022-x64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "vs2022-x64-release",
+      "displayName": "Build Release (x64)",
+      "configurePreset": "vs2022-x64",
+      "configuration": "Release"
+    },
+    {
+      "name": "vs2022-cuda-x64-release",
+      "displayName": "Build Release (CUDA x64)",
+      "configurePreset": "vs2022-cuda-x64",
+      "configuration": "Release"
+    }
+  ]
+}
