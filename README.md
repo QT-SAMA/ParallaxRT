@@ -1,10 +1,6 @@
 # ParallaxRT: Real-time Monocular 2D-to-3D Video Conversion Filter
 
 <p align="center">
-  <img src="src/core/app_icon.png" alt="ParallaxRT Logo" width="120" height="120">
-</p>
-
-<p align="center">
   <strong>基于深度学习与 CUDA DIBR 的低延迟实时 DirectShow 2D 转 3D 视频滤镜</strong>
 </p>
 
