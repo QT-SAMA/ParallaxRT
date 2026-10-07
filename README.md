@@ -61,7 +61,7 @@ Positioned between the upstream video decoder and the downstream video renderer,
 
 ---
 
-## 4. System Requirements
+## 3. System Requirements
 
 | Specification | Minimum Requirement | Recommended Requirement |
 | :--- | :--- | :--- |
@@ -74,13 +74,13 @@ Positioned between the upstream video decoder and the downstream video renderer,
 
 ---
 
-## 5. Deployment and Configuration
+## 4. Deployment and Configuration
 
-### 5.1 Automated Installation
+### 4.1 Automated Installation
 1. Download the latest installer `ParallaxRT_Setup.exe` from the [Releases](../../releases) section.
 2. Run the setup wizard. The installer unpacks all necessary CUDA, cuDNN, and runtime dependencies and automatically registers `ParallaxRTFilter.ax` with the Windows COM subsystem.
 
-### 5.2 PotPlayer Configuration
+### 4.2 PotPlayer Configuration
 1. Launch **PotPlayer** and press `F5` to open the **Preferences** dialog.
 2. In the navigation tree on the left, navigate to: **Filter** $\rightarrow$ **Filter Management**.
 3. Click the **Add Registered Filter** button at the bottom right.
@@ -91,9 +91,9 @@ Positioned between the upstream video decoder and the downstream video renderer,
 
 ---
 
-## 6. Building from Source
+## 5. Building from Source
 
-### 6.1 Build Prerequisites
+### 5.1 Build Prerequisites
 - **Operating System**: Windows 10 / 11 64-bit
 - **Compiler**: Microsoft Visual Studio 2022 (MSVC v143 toolset with the "Desktop development with C++" workload)
 - **Build System**: CMake 3.24 or higher
@@ -104,7 +104,7 @@ Positioned between the upstream video decoder and the downstream video renderer,
   ```
 - **Inference Engine**: ONNX Runtime GPU (v1.20+) Windows x64 binaries
 
-### 6.2 Compilation Steps
+### 5.2 Compilation Steps
 ```powershell
 # 1. Clone the repository
 git clone https://github.com/your-username/ParallaxRT.git
@@ -121,7 +121,7 @@ cmake --build build --config Release --target parallaxrt_filter
 ```
 Upon completion, the compiled binary `ParallaxRTFilter.ax` will be located in the `build/Release/` directory.
 
-### 6.3 Manual COM Registration
+### 5.3 Manual COM Registration
 Execute the following commands in an elevated PowerShell or Command Prompt (Run as Administrator):
 ```cmd
 :: Register filter
@@ -133,7 +133,7 @@ regsvr32 /u "C:\Path\To\ParallaxRTFilter.ax"
 
 ---
 
-## 7. Hardware Shutter Synchronization (ParallaxSYNC)
+## 6. Hardware Shutter Synchronization (ParallaxSYNC)
 
 For active stereoscopic display setups requiring external shutter synchronization:
 
@@ -143,7 +143,7 @@ For active stereoscopic display setups requiring external shutter synchronizatio
 
 ---
 
-## 8. Repository Layout
+## 7. Repository Layout
 
 ```text
 ParallaxRT/
@@ -168,7 +168,7 @@ ParallaxRT/
 
 ---
 
-## 9. License and Acknowledgments
+## 8. License and Acknowledgments
 
 - **License**: Distributed under the terms of the [MIT License](LICENSE).
 - **Depth Model**: Monocular depth estimation is powered by the [Depth Anything V2](https://github.com/DepthAnything/Depth-Anything-V2) architecture.
