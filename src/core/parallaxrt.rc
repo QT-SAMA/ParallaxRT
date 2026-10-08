@@ -1,0 +1,6 @@
+// ParallaxRT DirectShow Filter Resource Script
+#include <windows.h>
+
+#define IDI_PARALLAXRT_ICON 101
+
+IDI_PARALLAXRT_ICON ICON "app_icon.ico"
