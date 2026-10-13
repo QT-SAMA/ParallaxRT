@@ -1,4 +1,4 @@
-# ParallaxRT: Real-time Monocular 2D-to-3D Video Conversion Filter
+# ParallaxRT: Real-time Monocular 2D to 3D Video Conversion Filter
 
 <p align="center">
   <strong>A high-performance, low-latency DirectShow Transform Filter for real-time 2D-to-stereoscopic 3D video conversion via Deep Learning and CUDA DIBR.</strong>
