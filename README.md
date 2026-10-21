@@ -9,10 +9,6 @@
 
 ParallaxRT uses Depth Anything V2 to estimate depth and synthesize stereoscopic views from ordinary 2D video. Watch through a DirectShow player, stream to a phone or compatible VR player on your local network, or export a converted video for later playback.
 
-![软件界面](docs/images/main-ui.png)
-
-![二级界面](docs/images/main2-ui.png)
-
 ![DEMO](docs/images/DEMO.png)
 
 ## Features
@@ -29,6 +25,8 @@ ParallaxRT uses Depth Anything V2 to estimate depth and synthesize stereoscopic 
 - **Managed environments:** Hardware detection, automatic downloads of missing acceleration components, alternate download sources, and integrity verification.
 - **Local diagnostics:** Crash reports, hardware details, and runtime logs with an option to open the report folder.
 - **ParallaxSYNC:** Optional serial shutter synchronization and microcontroller firmware for compatible hardware setups.
+
+![UI](docs/images/main-ui.png)
 
 ## Download and installation
 
