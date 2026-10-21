@@ -1,176 +1,185 @@
-# ParallaxRT: Real-time Monocular 2D to 3D Video Conversion Filter
+# ParallaxRT
 
-<p align="center">
-  <strong>A high-performance, low-latency DirectShow Transform Filter for real-time 2D-to-stereoscopic 3D video conversion via Deep Learning and CUDA DIBR.</strong>
-</p>
+**Real-time 2D-to-3D video conversion, web playback, and offline export for Windows.**
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Platform-Windows%20x64-0078D6.svg" alt="Platform">
-  <img src="https://img.shields.io/badge/Language-C%2B%2B17%20%2F%20CUDA-00599C.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Framework-DirectShow%20Transform%20Filter-green.svg" alt="DirectShow">
-  <img src="https://img.shields.io/badge/CUDA-12.8%2B%20%7C%20cuDNN%209-76B900.svg?logo=nvidia" alt="CUDA">
-  <img src="https://img.shields.io/badge/Inference-ONNX%20Runtime%20GPU-blue.svg" alt="ONNX Runtime">
-  <img src="https://img.shields.io/badge/Model-Depth%20Anything%20V2-purple.svg" alt="Model">
-  <img src="https://img.shields.io/badge/License-MIT-lightgrey.svg" alt="License">
-</p>
+![Version](https://img.shields.io/badge/version-3.0.0-00bfd0)
+![Platform](https://img.shields.io/badge/platform-Windows%20x64-0078D6)
+![Language](https://img.shields.io/badge/language-C%2B%2B17-00599C)
+![Backends](https://img.shields.io/badge/inference-TensorRT%20%7C%20CUDA%20%7C%20DirectML%20%7C%20CPU-76B900)
 
----
+ParallaxRT uses Depth Anything V2 to estimate depth and synthesize stereoscopic views from ordinary 2D video. Watch through a DirectShow player, stream to a phone or compatible VR player on your local network, or export a converted video for later playback.
 
-## 1. Overview
+## Features
 
-**ParallaxRT** is a high-performance DirectShow Transform Filter (`ParallaxRTFilter.ax`) engineered for the Windows multimedia ecosystem, specifically designed for seamless integration with PotPlayer and other DirectShow-compliant media players.
+- **Real-time conversion:** DirectShow filter integration for 64-bit PotPlayer and other compatible players.
+- **GPU acceleration:** TensorRT and CUDA on compatible NVIDIA GPUs, DirectML on compatible AMD and Intel GPUs, and CPU fallback.
+- **Three depth models:** Depth Anything V2 Small, Base, and Large. Small is included; Base and Large download on demand.
+- **Stereo output:** Side-by-side and top/bottom layouts, full and half stereo options, anaglyph preview, depth map visualization, and ordinary 2D playback.
+- **Adjustable depth:** Disparity, convergence, detail enhancement, temporal smoothing, eye swapping, and processing resolution controls.
+- **Built-in web player:** Browse videos on the host PC, switch between ordinary playback and AI conversion, seek, and adjust stereo presentation. The browser remembers the last opened directory.
+- **LAN streaming:** QR-code access, HTTP/HLS playback, and DLNA/UPnP discovery for compatible external players.
+- **Offline export:** Convert 2D video to stereoscopic MP4 without requiring real-time processing speed, with optional audio preservation.
+- **Unified interface:** Cyan–red styling, animated page transitions, hover effects, tooltips, and English/Simplified Chinese interfaces.
+- **Managed environments:** Hardware detection, automatic downloads of missing acceleration components, alternate download sources, and integrity verification.
+- **Local diagnostics:** Crash reports, hardware details, and runtime logs with an option to open the report folder.
+- **ParallaxSYNC:** Optional serial shutter synchronization and microcontroller firmware for compatible hardware setups.
 
-Positioned between the upstream video decoder and the downstream video renderer, ParallaxRT intercepts decoded video frames in real time. By coupling state-of-the-art monocular depth estimation (Depth Anything V2) with a dedicated CUDA DIBR (Depth-Image-Based Rendering) view-synthesis pipeline, it synthesizes left- and right-eye stereoscopic disparity frames on the fly, delivering immersive 3D experiences with minimal latency and zero frame desynchronization.
+## Download and installation
 
----
+Download the latest Windows x64 installer from this repository's **Releases** page and run it. The installer registers the DirectShow filter and creates a shortcut for the main application.
 
-## 2. Key Technical Features
+The basic installation includes:
 
-### 2.1 High-Throughput Monocular Depth Inference
-- Integrates **Depth Anything V2** foundation models (supporting Small, Base, and Large variants exported to ONNX).
-- Leverages the **ONNX Runtime GPU (CUDA Execution Provider)** to maximize utilization of NVIDIA Tensor Cores and CUDA Cores.
-- Provides dynamic inference resolution scaling (100%, 75%, 50%, and 25%) to balance computational load and stereoscopic visual fidelity across midrange and high-end GPUs.
+- The main application, DirectShow filter, export/streaming tools, and crash reporter.
+- The Depth Anything V2 Small ONNX model for offline conversion.
+- FFmpeg and ffprobe for video probing, encoding, and streaming.
+- Essential application runtime libraries.
 
-### 2.2 End-to-End GPU DIBR Synthesis Pipeline
-- Custom-developed CUDA rendering kernels executing bilateral depth upsampling, dynamic relative depth normalization, backward-warping disparity projection, and edge occlusion hole filling (inpainting).
-- Eliminates host-device memory round-trips by processing intermediate tensors and surfaces entirely in GPU VRAM, minimizing end-to-end processing latency.
+Large CUDA, cuDNN, TensorRT, and DirectML packages are downloaded separately as needed. Users do not need to install the CUDA Toolkit or configure a system FFmpeg path.
 
-### 2.3 Comprehensive Stereoscopic Output Modes
-- **Half-SBS (Side-by-Side)**: Horizontally scaled stereo pairs compatible with 3D TVs, projectors, and VR/MR head-mounted displays.
-- **Full-SBS**: Native full-resolution side-by-side output preserving source clarity.
-- **Red-Cyan Anaglyph**: Enables stereoscopic depth perception on standard displays using standard passive complementary filters.
-- **Depth Map Visualization**: Direct grayscale depth map inspection for diagnostic evaluation.
-- **2D Pass-Through**: Zero-overhead hardware bypass allowing real-time comparative inspection without unregistering the filter.
+On startup, ParallaxRT checks the available hardware and missing environments. Allow the required downloads to finish, then restart the application when prompted. Close and reopen any external player using the filter as well.
 
-### 2.4 Decoupled Asynchronous Dual-Thread Pipeline
-- The DirectShow presentation pipeline and the background AI depth inference worker thread are fully decoupled.
-- Features a ring buffer frame cache combined with temporal smoothing heuristics, preventing playback stutter, presentation queue underruns, and audio-video desynchronization.
+## Hardware and acceleration
 
-### 2.5 Hardware Texture Stride & Pitch Auto-Adaptation
-- Incorporates dynamic row stride adaptation specifically tailored for downstream Direct3D 11 Video Renderers.
-- Automatically handles 128-byte and 64-byte GPU staging texture pitch alignment constraints, preventing diagonal skewing, striping, or color-channel offset on arbitrary non-standard resolutions (e.g., 480p, 540p, 720p, 1080p, 4K, 21:9 ultrawide, and anamorphic aspect ratios).
+Windows 10/11 **64-bit** is required. A compatible GPU and a recent vendor driver are recommended for real-time conversion.
 
-### 2.6 Low-Overhead Shared Memory IPC Control Panel
-- Includes a dedicated native Win32 floating tray control panel communicating with the running filter via shared memory IPC.
-- Allows real-time modification of operational parameters—including maximum disparity, zero-parallax convergence plane, inference downsampling scale, and stereoscopic mode—with instantaneous feedback during playback.
+| Hardware | Automatic acceleration path |
+| --- | --- |
+| Compatible NVIDIA RTX | TensorRT, then CUDA if TensorRT preparation fails |
+| Other supported NVIDIA GPUs | CUDA |
+| Compatible AMD / Intel GPUs | DirectML |
+| No usable GPU backend | CPU |
 
-### 2.7 Hardware Active Shutter Synchronization (ParallaxSYNC)
-- Designed for active shutter 3D systems (120Hz/144Hz displays and DLP-Link projectors).
-- Includes an integrated serial COM port transmitter that outputs left/right field synchronization pulses.
-- Provides open-source microcontroller firmware (`ParallaxSYNC.ino`) compatible with Arduino, ESP32, and custom IR/RF emitter circuits.
+The current TensorRT path requires an RTX GPU with compute capability 7.5 or newer and a driver reporting CUDA 12.9 support or later. GPU name alone does not guarantee successful engine construction. DirectML accelerates depth inference; CUDA-specific rendering optimizations require NVIDIA hardware.
 
----
+Performance depends on the model, video resolution, GPU, available memory, and playback settings. Small is the default starting point. Base and Large require more resources; no fixed frame rate is guaranteed. CPU conversion remains available offline, but may be slower than real time.
 
-## 3. System Requirements
+### TensorRT first-time preparation
 
-| Specification | Minimum Requirement | Recommended Requirement |
-| :--- | :--- | :--- |
-| **Operating System** | Windows 10 (64-bit) build 1903+ | Windows 11 (64-bit) |
-| **Graphics Processing Unit** | NVIDIA GeForce GTX 1060 (6GB) | NVIDIA GeForce RTX 3060 / 4060 or higher |
-| **GPU Architecture** | Pascal (Compute 6.1) or higher | Ampere (Compute 8.6) / Ada Lovelace (Compute 8.9) |
-| **Driver Version** | NVIDIA Display Driver $\ge$ 550.00 | Latest official Game Ready / Studio driver |
-| **CUDA Environment** | CUDA 12.0+ (bundled with installer) | CUDA Toolkit 12.8 / 13.x |
-| **Host Application** | PotPlayer (64-bit edition) | PotPlayer (64-bit latest release) |
+When AI conversion first uses a model without a validated engine cache, ParallaxRT displays a preparation window before continuing playback or export.
 
----
+- Displays the current stage and elapsed time. The underlying build does not expose a reliable overall percentage.
+- Builds in a separate process and validates the engine with a warm-up inference.
+- Reuses the engine cache on subsequent sessions with the same configuration.
+- Allows cancellation and falls back to another available backend on failure.
 
-## 4. Deployment and Configuration
+The first build may take several minutes. Changing the model, driver, GPU, input dimensions, or cache version can require another build.
 
-### 4.1 Automated Installation
-1. Download the latest installer `ParallaxRT_Setup.exe` from the [Releases](../../releases) section.
-2. Run the setup wizard. The installer unpacks all necessary CUDA, cuDNN, and runtime dependencies and automatically registers `ParallaxRTFilter.ax` with the Windows COM subsystem.
+## Quick start
 
-### 4.2 PotPlayer Configuration
-1. Launch **PotPlayer** and press `F5` to open the **Preferences** dialog.
-2. In the navigation tree on the left, navigate to: **Filter** $\rightarrow$ **Filter Management**.
-3. Click the **Add Registered Filter** button at the bottom right.
-4. Select **`ParallaxRT Real-time 3D Filter`** from the list and click **OK**.
-5. Select the newly added filter entry in the list and set its priority condition on the right to **`Always Use`**.
-6. Click **Apply** and **OK** to save settings.
-7. Open any video file. The ParallaxRT tray icon will appear in the Windows taskbar, allowing real-time parameter configuration.
+### Play through PotPlayer
 
----
+1. Install the 64-bit version of PotPlayer and ParallaxRT.
+2. Open PotPlayer preferences (`F5`) and locate **Filter Control / Filter Priority (Overall)**. Labels may vary by player version or language.
+3. Add the registered **ParallaxRT** filter and set it to **Prefer / Always Use**.
+4. Open a video and use the ParallaxRT control panel to choose the model, stereo format, and depth settings.
 
-## 5. Building from Source
+The player must actually load the filter for the controls to affect playback. Select the stereo layout supported by your display or headset; anaglyph viewing requires matching glasses.
 
-### 5.1 Build Prerequisites
-- **Operating System**: Windows 10 / 11 64-bit
-- **Compiler**: Microsoft Visual Studio 2022 (MSVC v143 toolset with the "Desktop development with C++" workload)
-- **Build System**: CMake 3.24 or higher
-- **Compute Platform**: NVIDIA CUDA Toolkit 12.8+ and cuDNN 9+
-- **Package Manager**: vcpkg
-  ```powershell
-  vcpkg install --triplet=x64-windows "opencv4[core,imgproc]:x64-windows"
-  ```
-- **Inference Engine**: ONNX Runtime GPU (v1.20+) Windows x64 binaries
+### Play on a phone or VR device
 
-### 5.2 Compilation Steps
+1. Open **LAN streaming** in the main application.
+2. Select the network adapter and port, then start the service.
+3. Connect the playback device to the same local network and scan the QR code or open the displayed address.
+4. Browse the PC's folders, select a video, and choose the playback/3D settings in the web player.
+
+The PC performs AI conversion and remains running during playback. Local playback through PotPlayer is not required. Compatible external players can also use the streaming address or DLNA discovery. Allow the service through Windows Firewall if another device cannot connect.
+
+### Export a 3D video
+
+1. Open **Export 3D video**.
+2. Choose a source file or use the current PotPlayer source, then select the output location.
+3. Select the model, stereo format, processing size, and audio option.
+4. Start the export and wait for completion.
+
+Export produces SDR H.264 MP4. Variable-frame-rate input is converted to a fixed frame rate; subtitles, chapters, and HDR metadata are not preserved.
+
+## Models and downloads
+
+Open **Advanced settings → Model and acceleration environment downloads** to manage models and runtimes. Installed entries provide access to their associated folders; missing entries offer downloads.
+
+- Use **Prefer mirrors / alternate sources** when the primary route is slow.
+- Use **Custom download sources** to configure matching package URLs. The generated configuration file documents resource IDs and the expected format.
+- Packages are checked against fixed sizes and SHA-256 hashes. Custom sources must provide the expected files.
+- Interrupted downloads can resume when the server supports it.
+
+The installer is smaller because GPU environments are optional; downloading complete acceleration environments can still require several gigabytes of disk space.
+
+## Settings, cache, and logs
+
+| Data | Location |
+| --- | --- |
+| Main user settings | `HKEY_CURRENT_USER\Software\ParallaxRT\Filter` |
+| Bundled Small model | Installation directory |
+| Downloaded models | `<installation directory>\parallaxrt-data\models` |
+| Downloaded runtimes | `<installation directory>\parallaxrt-data\runtime` |
+| Bundled FFmpeg tools | `<installation directory>\tools\ffmpeg` |
+| Custom download sources | `<installation directory>\parallaxrt-data\download-sources.txt` |
+| TensorRT engine cache | `%LOCALAPPDATA%\ParallaxRT\EngineCache` |
+| Diagnostic logs | `%LOCALAPPDATA%\ParallaxRT\Logs` |
+
+Diagnostic storage is limited to **100 MB total and at most five session folders**. Reports are stored locally and are **not uploaded automatically**. You can send the relevant files to the developer manually.
+
+If TensorRT preparation fails, retain `failed.txt` from the affected engine directory and the corresponding `runtime.log` when reporting the issue. To retry a failed configuration, stop playback, close the application/player, remove that configuration's cache folder, and restart.
+
+## Build from source
+
+### Prerequisites
+
+- Visual Studio 2022 with the **Desktop development with C++** workload and Windows SDK.
+- CMake 3.24 or newer.
+- OpenCV (`core`, `imgproc`) and ZLIB, discoverable through vcpkg or another configured package installation.
+- ONNX Runtime 1.24.4 Windows x64 headers and base runtime files.
+- CUDA Toolkit 12.8 for the CUDA-enabled build.
+- The bundled Small model at the repository root and the pinned FFmpeg 8.1.2 essentials resources expected by `packaging/ffmpeg_bundle.cmake`.
+
+`CMakePresets.json` includes Visual Studio x64 and CUDA + DirectML configurations. Adjust its local Visual Studio/vcpkg, CUDA, and dependency paths for your machine before configuring. The presets use an existing `vcpkg_installed` tree rather than automatically installing dependencies.
+
 ```powershell
-# 1. Clone the repository
-git clone https://github.com/your-username/ParallaxRT.git
-cd ParallaxRT
+# Configure the full GPU-enabled application.
+cmake --preset vs2022-cuda-x64
 
-# 2. Configure CMake build tree (with CUDA enabled)
-cmake -B build -S . -G "Visual Studio 17 2022" -A x64 `
-  -DPARALLAXRT_ENABLE_CUDA=ON `
-  -DPARALLAXRT_ENABLE_DIRECTML=OFF `
-  -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
-
-# 3. Build Release target
-cmake --build build --config Release --target parallaxrt_filter
-```
-Upon completion, the compiled binary `ParallaxRTFilter.ax` will be located in the `build/Release/` directory.
-
-### 5.3 Manual COM Registration
-Execute the following commands in an elevated PowerShell or Command Prompt (Run as Administrator):
-```cmd
-:: Register filter
-regsvr32 "C:\Path\To\ParallaxRTFilter.ax"
-
-:: Unregister filter
-regsvr32 /u "C:\Path\To\ParallaxRTFilter.ax"
+# Build the main application and its required tools.
+cmake --build --preset vs2022-cuda-x64-release --target parallaxrt_app
 ```
 
----
+Output is written to `out/build/vs2022-cuda-x64/Release`. Keep the matching executables, engine/filter DLLs, runtime libraries, model, web assets, and tools together when updating an installation.
 
-## 6. Hardware Shutter Synchronization (ParallaxSYNC)
+To create the installer, install **Inno Setup 6**, check the local tool paths in `packaging/build_installer.bat`, and run:
 
-For active stereoscopic display setups requiring external shutter synchronization:
+```powershell
+.\packaging\build_installer.bat
+```
 
-1. **Firmware Flashing**: Open `ParallaxSYNC/ParallaxSYNC.ino` in the Arduino IDE and upload it to a compatible development board (e.g., Arduino Nano, Pro Micro, or ESP32).
-2. **Hardware Interface**: Connect the designated digital output pin to the synchronization input of your active shutter emitter or DLP-Link driver circuit. The pin outputs a square wave where high corresponds to the left field and low corresponds to the right field.
-3. **Software Activation**: In the ParallaxRT Control Panel, enable **Hardware Serial Sync** and specify the assigned serial COM port and baud rate (default: 115200 bps).
+The script builds the Release application, verifies the installation payload, and creates the installer in `dist`.
 
----
-
-## 7. Repository Layout
+### Repository layout
 
 ```text
-ParallaxRT/
-├── CMakeLists.txt                 # Root CMake build configuration
-├── CMakePresets.json              # CMake configuration presets for Visual Studio
-├── LICENSE                        # Open-source license terms (MIT License)
-├── README.md                      # Technical documentation
-├── ParallaxSYNC/                  # Hardware shutter synchronization module
-│   └── ParallaxSYNC.ino           # Arduino synchronization firmware
-├── src/
-│   ├── core/
-│   │   ├── depth_estimator.h/.cpp # ONNX Runtime depth estimation wrapper
-│   │   ├── dibr_renderer.h/.cpp   # DIBR CPU fallback and geometric routines
-│   │   ├── dibr_renderer_cuda.cu  # High-performance CUDA DIBR compute kernels
-│   │   ├── directshow_filter.h/.cpp # DirectShow filter pipeline & stride adaptation
-│   │   ├── directshow_exports.cpp # COM class factory and registration exports
-│   │   ├── filter_config.h        # Shared memory IPC configuration manager
-│   │   └── tray_controller.h      # Floating tray control panel implementation
-│   └── app/                       # Standalone preview and batch processing utilities
-└── packaging/                     # Inno Setup scripts and installer resources
+src/
+  app/           Main application
+  core/          Inference backends, rendering, filter, settings, and downloads
+  playback/      Processing and playback sessions
+  stream/        LAN server and web player
+  export/        Offline conversion
+  diagnostics/   Logging and crash reporting
+packaging/       Installer scripts and resource verification
+ParallaxSYNC/    Optional shutter synchronization firmware
+tests/           Validation utilities and tests
 ```
 
----
+## Reporting issues
 
-## 8. License and Acknowledgments
+Include the application version, Windows version, GPU and driver, selected model/backend, playback or export mode, and steps to reproduce. Attach the relevant local logs and TensorRT failure details when applicable. Review diagnostic files before sharing them, as they can contain local paths and hardware information.
 
-- **License**: Distributed under the terms of the [MIT License](LICENSE).
-- **Depth Model**: Monocular depth estimation is powered by the [Depth Anything V2](https://github.com/DepthAnything/Depth-Anything-V2) architecture.
-- **Inference Runtime**: Accelerated via [ONNX Runtime](https://onnxruntime.ai/) and the [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit).
-- **Coder**: Thanks to [ChatGPT](https://chatgpt.com/),[Gemini](https://gemini.google.com/),[DeepSeek](https://www.deepseek.com/).
+## License and acknowledgments
+
+ParallaxRT source code is distributed under the [MIT License](LICENSE). Third-party models and runtime components retain their own licenses.
+
+- [Depth Anything V2](https://github.com/DepthAnything/Depth-Anything-V2#license): Small uses Apache-2.0; Base and Large use CC-BY-NC-4.0.
+- [ONNX Runtime](https://github.com/microsoft/onnxruntime) for inference execution.
+- NVIDIA CUDA and TensorRT, and Microsoft DirectML, for GPU acceleration.
+- [OpenCV](https://opencv.org/) for image processing.
+- [FFmpeg](https://www.ffmpeg.org/legal.html) for media processing. The bundled essentials build identifies its license as GPLv3; its license and source information are included with the tools.
+
+The project's MIT license does not replace the licensing terms of downloaded models or bundled third-party components.
