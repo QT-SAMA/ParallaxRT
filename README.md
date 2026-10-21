@@ -9,6 +9,12 @@
 
 ParallaxRT uses Depth Anything V2 to estimate depth and synthesize stereoscopic views from ordinary 2D video. Watch through a DirectShow player, stream to a phone or compatible VR player on your local network, or export a converted video for later playback.
 
+![软件界面](docs/images/main-ui.png)
+
+![二级界面](docs/images/main2-ui.png)
+
+![DEMO](docs/images/DEMO.png)
+
 ## Features
 
 - **Real-time conversion:** DirectShow filter integration for 64-bit PotPlayer and other compatible players.
