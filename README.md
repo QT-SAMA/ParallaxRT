@@ -2,7 +2,7 @@
 
 **Real-time 2D-to-3D video conversion, web playback, and offline export for Windows.**
 
-![Version](https://img.shields.io/badge/version-3.3.1-00bfd0)
+![Version](https://img.shields.io/badge/version-3.4.0-00bfd0)
 ![Platform](https://img.shields.io/badge/platform-Windows%20x64-0078D6)
 ![Language](https://img.shields.io/badge/language-C%2B%2B17-00599C)
 ![Backends](https://img.shields.io/badge/inference-TensorRT%20%7C%20CUDA%20%7C%20DirectML%20%7C%20CPU-76B900)
