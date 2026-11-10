@@ -16,32 +16,19 @@ ParallaxRT uses Depth Anything V2 to estimate depth and synthesize stereoscopic 
 - **Real-time conversion:** DirectShow filter integration for 64-bit PotPlayer and other compatible players.
 - **GPU acceleration:** TensorRT and CUDA on compatible NVIDIA GPUs, DirectML on compatible AMD and Intel GPUs, and CPU fallback.
 - **Three depth models:** Depth Anything V2 Small, Base, and Large. Small is included; Base and Large download on demand.
+- **AI Inference Resolution Tiers:** Choose from Low, Medium, and High settings to balance depth quality and performance. Higher tiers require a more capable GPU.
+- **NVIDIA RTX Video Super Resolution:** AI upscaling for low-resolution video. Available for standard 2D playback and alongside real-time 2D-to-3D conversion.
+- **Window Capture 3D:** Capture browser video and other application windows in real time and convert them to stereoscopic 3D.
+- **Dual-Display Stereo Output:** Send left-eye and right-eye images to separate displays or projectors for dual-projector polarized 3D systems.
 - **Stereo output:** Side-by-side and top/bottom layouts, full and half stereo options, anaglyph preview, depth map visualization, and ordinary 2D playback.
 - **Adjustable depth:** Disparity, convergence, detail enhancement, temporal smoothing, eye swapping, and processing resolution controls.
-- **Built-in web player:** Browse videos on the host PC, switch between ordinary playback and AI conversion, seek, and adjust stereo presentation. The browser remembers the last opened directory.
+- **Built-in web player:** Browse videos on the host PC, switch between ordinary playback and AI conversion, seek, and adjust stereo presentation. 
 - **LAN streaming:** QR-code access, HTTP/HLS playback, and DLNA/UPnP discovery for compatible external players.
+- **SteamVR streaming:** Built-in OpenVR plug-ins, supports SteamVR streaming.
 - **Offline export:** Convert 2D video to stereoscopic MP4 without requiring real-time processing speed, with optional audio preservation.
-- **Unified interface:** Cyan–red styling, animated page transitions, hover effects, tooltips, and English/Simplified Chinese interfaces.
 - **Managed environments:** Hardware detection, automatic downloads of missing acceleration components, alternate download sources, and integrity verification.
 - **Local diagnostics:** Crash reports, hardware details, and runtime logs with an option to open the report folder.
 - **ParallaxSYNC:** Optional serial shutter synchronization and microcontroller firmware for compatible hardware setups.
-
-## ParallaxRT v3.3.1 Release Notes
-## New Features
-- AI Inference Resolution Tiers: Choose from Low, Medium, and High settings to balance depth quality and performance. Higher tiers require a more capable GPU.
-- NVIDIA RTX Video Super Resolution: AI upscaling for low-resolution video. Available for standard 2D playback and alongside real-time 2D-to-3D conversion.
-- Dual-Display Stereo Output: Send left-eye and right-eye images to separate displays or projectors for dual-projector polarized 3D systems.
-- Window Capture 3D: Capture browser video and other application windows in real time and convert them to stereoscopic 3D.
-- Close-Up Face Depth Refinement (Experimental): Apply additional depth inference to detected face regions to improve close-up facial depth detail. Disabled by default.
-- Hardware Acceleration Selection: Manually select TensorRT, CUDA, DirectML, or CPU, with automatic fallback to an available backend.
-- MiDaS Small Model: Added a lightweight depth model as an alternative for lower-performance dedicated and integrated GPUs.
-- Optical Hardware Synchronization: Supports shutter 3D synchronization on high-refresh-rate displays with compatible external synchronization hardware. Results depend on display and glasses compatibility.
-
-## New FImprovements and Changes
-- Significantly improved AI inference performance for smoother real-time playback.
-- Fixed dropdown flickering, misaligned text, and unexpected resets of the window capture selection.
-- Fixed stretched playback of videos with non-standard aspect ratios.
-- Removed high-frequency RGB detail injection.
 
 ![UI](docs/images/main-ui.png)
 
