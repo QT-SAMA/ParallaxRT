@@ -32,7 +32,7 @@ ParallaxRT uses Depth Anything V2 to estimate depth and synthesize stereoscopic 
 
 ![UI](docs/images/main-ui.png)
 
-## Download and installation
+## Download and installation 
 
 Download the latest Windows x64 installer from this repository's **Releases** page and run it. The installer registers the DirectShow filter and creates a shortcut for the main application.
 
